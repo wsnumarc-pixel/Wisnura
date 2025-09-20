@@ -1,0 +1,281 @@
+<!doctype html>
+
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Kalkulator Love ❤️</title>
+  <style>
+    :root{
+      --bg:#140016; /* dark purple */
+      --panel:#1f0a1d;
+      --accent:#ff6b9a;
+      --accent-2:#ff9cc2;
+      --glass: rgba(255,255,255,0.06);
+      --text:#fff;
+      --muted: rgba(255,255,255,0.6);
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0;font-family:Inter,ui-sans-serif,system-ui,Segoe UI,Roboto,'Helvetica Neue',Arial}
+    body{
+      background: radial-gradient(1200px 600px at 10% 10%, #2a0530 0%, transparent 12%),
+                  radial-gradient(1000px 400px at 90% 90%, #26102a 0%, transparent 12%),
+                  var(--bg);
+      display:flex;align-items:center;justify-content:center;padding:40px;
+      overflow:hidden;color:var(--text);
+    }/* Floating hearts canvas */
+.hearts-layer{position:fixed;inset:0;pointer-events:none;z-index:0}
+
+/* Card */
+.card{
+  position:relative;z-index:2;
+  width:360px;max-width:95vw;border-radius:20px;padding:20px;background:linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.015));box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+  border:1px solid rgba(255,255,255,0.04);
+  overflow:hidden;
+}
+
+.header{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.logo{
+  width:54px;height:54px;border-radius:14px;background:linear-gradient(135deg,var(--accent),var(--accent-2));display:flex;align-items:center;justify-content:center;box-shadow:0 6px 18px rgba(255,107,154,0.18);
+  transform:rotate(-8deg);
+}
+.logo .heart{font-size:26px}
+.title{line-height:1}
+.title h1{margin:0;font-size:18px;letter-spacing:0.2px}
+.title p{margin:0;font-size:12px;color:var(--muted)}
+
+/* Display */
+.display{
+  background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));padding:16px;border-radius:14px;border:1px solid rgba(255,255,255,0.02);display:flex;flex-direction:column;gap:6px;margin-bottom:14px;min-height:88px;
+}
+.history{font-size:13px;color:rgba(255,255,255,0.6);opacity:0.9;min-height:18px}
+.output{font-family: 'Segoe UI Variable', 'Helvetica Neue', Arial; font-weight:700;font-size:28px;text-align:right}
+
+/* Buttons grid */
+.pad{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+button.key{padding:16px;border-radius:12px;border:0;font-size:18px;background:var(--glass);color:var(--text);backdrop-filter: blur(6px);cursor:pointer;transition:transform .12s ease, box-shadow .12s ease}
+button.key:active{transform:translateY(2px) scale(.995)}
+.op{background:linear-gradient(135deg,#45103a,#6e072f);box-shadow:0 6px 20px rgba(110,7,47,0.2)}
+.accent{background:linear-gradient(135deg,var(--accent),var(--accent-2));box-shadow:0 8px 30px rgba(255,107,154,0.18);color:#420014}
+.wide{grid-column: span 2}
+
+/* Little heart on buttons */
+button.key .mini-heart{display:inline-block;margin-left:8px;font-size:12px;opacity:0.9}
+
+/* Floating heart animation for the logo */
+.logo::after{content:'';position:absolute;inset:auto;left:14px;top:14px;width:12px;height:12px;border-radius:50%;background:rgba(255,255,255,0.06);filter:blur(6px)}
+.pulse{animation:beat 1s infinite}
+@keyframes beat{
+  0%{transform:scale(1)}
+  45%{transform:scale(1.12)}
+  100%{transform:scale(1)}
+}
+
+/* small footer */
+.footer{display:flex;align-items:center;justify-content:space-between;margin-top:12px;font-size:12px;color:var(--muted)}
+
+/* Floating heart element */
+.floating-heart{
+  position:fixed;left:50%;top:50%;width:32px;height:32px;transform:translate(-50%,-50%);pointer-events:none;z-index:1;opacity:0;
+}
+
+/* Responsive tweaks */
+@media (max-width:420px){.card{padding:16px}}
+
+  </style>
+</head>
+<body>
+  <div class="hearts-layer" id="heartsLayer"></div>  <div class="card" role="application" aria-label="Kalkulator Love">
+    <div class="header">
+      <div class="logo pulse" id="logo">
+        <div class="heart" style="font-size:28px">❤️</div>
+      </div>
+      <div class="title">
+        <h1>Kalkulator by wisnu</h1>
+        <p>semua bisa di hitung, tapi cintaku pada hira tidak 💕</p>
+      </div>
+    </div><div class="display" id="display">
+  <div class="history" id="history"></div>
+  <div class="output" id="output">0</div>
+</div>
+
+<div class="pad">
+  <button class="key" data-action="clear">C <span class="mini-heart">💔</span></button>
+  <button class="key" data-action="back">⌫</button>
+  <button class="key" data-action="percent">%</button>
+  <button class="key op" data-action="/">÷</button>
+
+  <button class="key" data-value="7">7</button>
+  <button class="key" data-value="8">8</button>
+  <button class="key" data-value="9">9</button>
+  <button class="key op" data-action="*">×</button>
+
+  <button class="key" data-value="4">4</button>
+  <button class="key" data-value="5">5</button>
+  <button class="key" data-value="6">6</button>
+  <button class="key op" data-action="-">−</button>
+
+  <button class="key" data-value="1">1</button>
+  <button class="key" data-value="2">2</button>
+  <button class="key" data-value="3">3</button>
+  <button class="key op" data-action="+">+</button>
+
+  <button class="key wide" data-value="0">0</button>
+  <button class="key" data-value=".">.</button>
+  <button class="key accent" data-action="equals">= <span class="mini-heart">💖</span></button>
+</div>
+
+<div class="footer">
+  <div>created by wisnu </div>
+  <div id="author" style="font-weight:600">hira</div>
+</div>
+
+  </div>  <template id="heartTpl">
+    <div class="heart" style="position:absolute;left:0;top:0;width:36px;height:36px;transform-origin:center;pointer-events:none">❤️</div>
+  </template>  <script>
+    // Kalkulator logic
+    (function(){
+      const outputEl = document.getElementById('output');
+      const historyEl = document.getElementById('history');
+      const keys = document.querySelectorAll('button.key');
+      let current = '';
+      let expression = '';
+
+      function refresh(){
+        outputEl.textContent = current || '0';
+        historyEl.textContent = expression;
+      }
+
+      function append(value){
+        // avoid multiple leading zeros
+        if(value === '.' && current.includes('.')) return;
+        if(current === '0' && value !== '.') current = value;
+        else current = current + value;
+        animateButtonSmall();
+        refresh();
+      }
+
+      function operate(op){
+        if(current === '' && expression === '') return;
+        if(current !== ''){
+          expression += (expression === '' ? '' : ' ') + current;
+          current = '';
+        }
+        expression += ' ' + op + ' ';
+        refresh();
+      }
+
+      function clearAll(){ current=''; expression=''; refresh(); }
+      function backspace(){ if(current) current = current.slice(0,-1); else { expression = expression.trim(); expression = expression.replace(/\s+.$/, ''); } refresh(); }
+
+      function percent(){ if(current) current = (parseFloat(current)/100).toString(); refresh(); }
+
+      function equals(){
+        try{
+          // build a safe expression: replace × ÷ − with JS ops
+          let expr = ((expression + (current? ' ' + current : '')) || '').replace(/×/g,'*').replace(/÷/g,'/').replace(/−/g,'-');
+          expr = expr.replace(/[^0-9+\-*/.()% ]/g,''); // strip unexpected
+          if(!expr.trim()) return;
+          const result = Function('return ('+expr+')')();
+          expression = '';
+          current = (result === Infinity || result === -Infinity) ? 'Error' : String(result);
+          spawnHearts(6);
+          bigBeatLogo();
+          refresh();
+        }catch(e){ current='Error'; refresh(); }
+      }
+
+      keys.forEach(k=>{
+        const v = k.getAttribute('data-value');
+        const a = k.getAttribute('data-action');
+        if(v){ k.addEventListener('click', ()=>append(v)); }
+        if(a){
+          k.addEventListener('click', ()=>{
+            if(a==='clear') clearAll();
+            else if(a==='back') backspace();
+            else if(a==='percent') percent();
+            else if(a==='equals') equals();
+            else operate(a);
+          })
+        }
+      });
+
+      // keyboard support
+      window.addEventListener('keydown', (ev)=>{
+        if(ev.key>= '0' && ev.key<= '9') append(ev.key);
+        else if(ev.key === '.') append('.');
+        else if(ev.key === 'Backspace') backspace();
+        else if(ev.key === 'Escape') clearAll();
+        else if(ev.key === 'Enter' || ev.key === '=') equals();
+        else if(['+','-','*','/'].includes(ev.key)) operate(ev.key);
+      });
+
+      refresh();
+
+      // small animations
+      function animateButtonSmall(){
+        // tiny wink: create a small heart near the output
+        const h = document.createElement('div');
+        h.textContent = '💓';
+        h.style.position = 'absolute';
+        h.style.right = '26px';
+        h.style.top = '18px';
+        h.style.fontSize = '18px';
+        h.style.opacity = '0';
+        h.style.transform = 'translateY(6px) scale(.6)';
+        h.style.transition = 'all 600ms cubic-bezier(.22,1,.36,1)';
+        document.querySelector('.card').appendChild(h);
+        requestAnimationFrame(()=>{ h.style.opacity='1'; h.style.transform='translateY(-18px) scale(1)'; });
+        setTimeout(()=>{ h.style.opacity='0'; h.style.transform='translateY(-30px) scale(.6)'; },600);
+        setTimeout(()=>h.remove(),1200);
+      }
+
+      // hearts system: spawn floating hearts
+      const heartsLayer = document.getElementById('heartsLayer');
+      function spawnHearts(n=3){
+        for(let i=0;i<n;i++){
+          const el = document.createElement('div');
+          el.className = 'floating-heart';
+          el.innerHTML = '<div style="font-size:28px;filter:drop-shadow(0 6px 12px rgba(255,70,120,0.18));">'+ (i%2? '💖':'❤️') +'</div>';
+          heartsLayer.appendChild(el);
+
+          // random start position at bottom-ish
+          const startX = Math.random()*100; // vw
+          const size = 18 + Math.random()*28;
+          el.style.left = startX + 'vw';
+          el.style.bottom = '-10vh';
+          el.style.opacity = '0';
+          el.style.transform = 'translateY(0) scale(.6)';
+
+          // animate using JS for simpler cross-browser control
+          const delay = Math.random()*200;
+          setTimeout(()=>{
+            el.style.transition = 'transform 2500ms cubic-bezier(.22,1,.36,1), bottom 2500ms linear, opacity 1200ms ease-out';
+            el.style.bottom = (40 + Math.random()*80) + 'vh';
+            el.style.opacity = '1';
+            el.style.transform = 'translateY(-6vh) scale(1) rotate(' + (Math.random()*60-30) + 'deg)';
+          }, delay);
+
+          // fade and remove
+          setTimeout(()=>{ el.style.opacity='0'; }, 2400+delay);
+          setTimeout(()=>el.remove(), 3200+delay);
+        }
+      }
+
+      // gentle periodic hearts
+      setInterval(()=>{ if(Math.random()>0.6) spawnHearts(1); },1400);
+
+      // logo big beat when equals pressed
+      function bigBeatLogo(){
+        const logo = document.getElementById('logo');
+        logo.style.transition='transform 420ms cubic-bezier(.22,1,.36,1)';
+        logo.style.transform='scale(1.18) rotate(-6deg)';
+        setTimeout(()=> logo.style.transform='scale(1) rotate(-8deg)',430);
+      }
+
+      // initial warm heart shower
+      spawnHearts(8);
+
+    })();
+  </script></body>
+</html>
